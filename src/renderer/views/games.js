@@ -51,7 +51,8 @@ export class GamesView {
                    <p>Puedes añadir otros juegos en Ajustes → Juegos de PC. Pulsa <b>${app.glyph('A')}</b> para ir y <b>${app.glyph('X')}</b> para volver a buscar.</p>`
                 : `<p>Copia tus juegos en <code>${escapeHtml(app.state.settings.romsDir)}\\${c.id}</code></p>
                  <p>Formatos: ${c.exts.join(' ')}</p>
-                 <p>Pulsa <b>${app.glyph('A')}</b> para abrir la carpeta y <b>${app.glyph('X')}</b> para volver a buscar.</p>`}
+                 <p>Pulsa <b>${app.glyph('A')}</b> para abrir la carpeta y <b>${app.glyph('X')}</b> para volver a buscar.</p>
+                 ${c.homebrew ? `<p>GameHub no distribuye juegos. Pulsa <b>${app.glyph('Y')}</b> para ver juegos homebrew gratuitos y legales en itch.io, una web segura.</p>` : ''}`}
             ${missingEmu ? `<p class="pill warn">Falta instalar el emulador · pulsa ${app.glyph('Menu')} para ir a Ajustes</p>` : ''}
           </div>`}
       </section>`;
@@ -182,8 +183,10 @@ export class GamesView {
 
   updateHints() {
     const hasGames = this.games.length > 0;
+    const showHomebrew = !hasGames && !this.onlyFavs && !this.c.pc && this.c.homebrew;
     app.hints([
-      ...(hasGames ? [['A', 'Jugar'], ['Y', 'Favorito']] : [['A', 'Abrir carpeta']]),
+      ...(hasGames ? [['A', 'Jugar'], ['Y', 'Favorito']] : [['A', this.c.pc ? 'Ajustes' : 'Abrir carpeta']]),
+      ...(showHomebrew ? [['Y', 'Juegos gratis']] : []),
       ['X', hasGames ? (this.onlyFavs ? 'Ver todos' : 'Solo favoritos') : 'Buscar juegos'],
       ['LB', ''], ['RB', 'Cambiar consola'],
       ['B', 'Atrás'],
@@ -207,7 +210,10 @@ export class GamesView {
         if (this.c.pc) return app.go(SettingsView);
         if (!this.onlyFavs) return api.openFolder('roms');
         return;
-      case 'y': return hasGames && this.toggleFavorite();
+      case 'y':
+        if (hasGames) return this.toggleFavorite();
+        if (!this.onlyFavs && !this.c.pc && this.c.homebrew) { sounds.select(); return api.openExternal(`homebrew-${this.c.id}`); }
+        return;
       case 'x':
         if (!hasGames && !this.onlyFavs) {
           await api.scan();

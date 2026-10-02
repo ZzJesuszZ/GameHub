@@ -9,9 +9,15 @@ y qué emuladores descargar. Los que ya tengas instalados (p. ej. PCSX2) se dete
 
 ## Juegos de PC
 La tarjeta **PC** reúne los juegos instalados de **Steam** y **Epic Games** (se detectan solos) y los que añadas a mano
-en Ajustes → Juegos de PC (.exe o acceso directo). Las portadas salen de la caché de Steam de tu PC o de la tienda
-de Steam; con una clave de SteamGridDB, también de SteamGridDB. Al cerrar el juego, GameHub vuelve solo.
-Durante un juego de PC, el combo del mando muestra GameHub encima, pero no cierra el juego.
+en Ajustes → Juegos de PC (.exe o acceso directo). Las portadas salen siempre de Steam (de la caché de tu PC o de su
+tienda); la clave de SteamGridDB nunca las sustituye, solo se usa para los juegos añadidos a mano que no estén en
+Steam. Al cerrar el juego, GameHub vuelve solo. Durante un juego de PC, el combo del mando muestra GameHub encima,
+pero no cierra el juego.
+
+## Conseguir juegos
+GameHub no distribuye ni enlaza a ROMs de juegos comerciales. Cuando una consola no tiene juegos, el botón **Y**
+("Juegos gratis") abre en itch.io —una web segura— los juegos homebrew y freeware gratuitos y legales de esa consola.
+Para el resto, usa copias de seguridad de tus propios juegos.
 
 ## Apariencia
 Ajustes → Apariencia → Estilo: neón con el color de cada consola, neón cian + magenta, mezcla o clásico.

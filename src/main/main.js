@@ -227,9 +227,14 @@ function registerIpc() {
     const target = { roms: settings.load().romsDir, bios: emulators.biosDir(), emulators: emulators.emuRoot() }[which];
     if (target) return shell.openPath(target);
   });
-  // Lista fija de páginas externas: nunca se abre una URL que venga del renderer
+  // Lista fija de páginas externas: nunca se abre una URL que venga del renderer.
+  // homebrew-<consola>: juegos gratuitos y legales (homebrew/freeware) en itch.io, una
+  // plataforma segura y conocida. GameHub nunca enlaza a ROMs de juegos comerciales.
   ipcMain.handle('shell:openExternal', (_e, which) => {
-    const url = { steamgriddb: 'https://www.steamgriddb.com/profile/preferences/api' }[which];
+    const homebrewTag = which.startsWith('homebrew-') && CONSOLES.find((c) => c.id === which.slice(9))?.homebrew;
+    const url = homebrewTag
+      ? `https://itch.io/games/free/tag-${homebrewTag}`
+      : { steamgriddb: 'https://www.steamgriddb.com/profile/preferences/api' }[which];
     if (url) return shell.openExternal(url);
   });
   // Pegar la clave de SteamGridDB (u otro texto corto) desde el portapapeles del sistema

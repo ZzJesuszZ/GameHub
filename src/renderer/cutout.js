@@ -9,11 +9,24 @@
 
 const cache = new Map(); // url -> Promise<blobUrl>
 
-// Fondo: casi blanco y poco saturado (fondo de estudio); el ya transparente se trata aparte
-function isBackground(d, i) {
+// Fondo: casi blanco y poco saturado (fondo de estudio); el ya transparente se trata aparte.
+// Se usa para arrancar el relleno desde el borde (evita comerse sin querer una consola clara
+// que tocase el marco).
+function isBackgroundStrict(d, i) {
   if (d[i + 3] < 24) return true;
   const r = d[i], g = d[i + 1], b = d[i + 2];
   return r > 222 && g > 222 && b > 222 && Math.max(r, g, b) - Math.min(r, g, b) < 26;
+}
+
+// ¿Es prácticamente el mismo color que el fondo real de ESTA foto? A diferencia de
+// isBackgroundStrict (un umbral fijo de "blanco"), compara contra el color de fondo medido,
+// que puede ser gris claro o tener un ligero tinte. Solo con esto se detectan, aparte, los
+// huecos de fondo que quedan encerrados (p. ej. dentro del lazo de un cable) y que el relleno
+// desde el borde nunca llega a tocar porque el canal que los conecta es demasiado estrecho.
+function isNearColor(d, i, bg, maxDist) {
+  if (d[i + 3] < 24) return true;
+  const dr = d[i] - bg[0], dg = d[i + 1] - bg[1], db = d[i + 2] - bg[2];
+  return dr * dr + dg * dg + db * db < maxDist * maxDist;
 }
 
 // ¿El borde de la imagen ya es transparente? Indica una foto ya recortada en origen.
@@ -54,7 +67,7 @@ async function process(url) {
   const stack = new Int32Array(w * h);
   let top = 0;
   const push = (p) => {
-    if (!removed[p] && isBackground(d, p * 4)) {
+    if (!removed[p] && isBackgroundStrict(d, p * 4)) {
       removed[p] = 1;
       stack[top++] = p;
     }
@@ -68,6 +81,53 @@ async function process(url) {
     if (x < w - 1) push(p + 1);
     if (p >= w) push(p - w);
     if (p < w * (h - 1)) push(p + w);
+  }
+
+  // Color medio real del fondo de esta foto (puede no ser blanco puro)
+  let bgR = 0, bgG = 0, bgB = 0, bgCount = 0;
+  for (let p = 0; p < w * h; p += 7) {
+    if (removed[p]) {
+      const i = p * 4;
+      bgR += d[i]; bgG += d[i + 1]; bgB += d[i + 2]; bgCount++;
+    }
+  }
+  const bg = bgCount ? [bgR / bgCount, bgG / bgCount, bgB / bgCount] : [255, 255, 255];
+
+  // Huecos de fondo encerrados (p. ej. dentro del lazo de un cable) que el relleno desde el
+  // borde nunca alcanza porque el canal que los conecta es demasiado estrecho o borroso. Se
+  // buscan regiones que no toquen el borde de la imagen y cuyo color sea casi idéntico al
+  // fondo real (no solo "claro": el ruido de compresión JPEG puede aclarar algún bloque de
+  // una superficie clara sin que sea en realidad un hueco, por eso se exige un tamaño mínimo
+  // bastante generoso además de un color muy parecido al fondo).
+  const visited = new Uint8Array(w * h);
+  const compStack = new Int32Array(w * h);
+  const comp = new Int32Array(w * h);
+  const maxHoleArea = w * h * 0.015;
+  const minHoleArea = Math.max(250, w * h * 0.0003);
+  const holeDist = 22;
+  for (let p = 0; p < w * h; p++) {
+    if (removed[p] || visited[p]) continue;
+    if (!isNearColor(d, p * 4, bg, holeDist)) {
+      visited[p] = 1;
+      continue;
+    }
+    let top2 = 0, size = 0, touchesBorder = false;
+    compStack[top2++] = p;
+    visited[p] = 1;
+    while (top2) {
+      const q = compStack[--top2];
+      comp[size++] = q;
+      const x = q % w;
+      if (x === 0 || x === w - 1 || q < w || q >= w * (h - 1)) touchesBorder = true;
+      if (x > 0 && !visited[q - 1] && !removed[q - 1] && isNearColor(d, (q - 1) * 4, bg, holeDist)) { visited[q - 1] = 1; compStack[top2++] = q - 1; }
+      if (x < w - 1 && !visited[q + 1] && !removed[q + 1] && isNearColor(d, (q + 1) * 4, bg, holeDist)) { visited[q + 1] = 1; compStack[top2++] = q + 1; }
+      if (q >= w && !visited[q - w] && !removed[q - w] && isNearColor(d, (q - w) * 4, bg, holeDist)) { visited[q - w] = 1; compStack[top2++] = q - w; }
+      if (q < w * (h - 1) && !visited[q + w] && !removed[q + w] && isNearColor(d, (q + w) * 4, bg, holeDist)) { visited[q + w] = 1; compStack[top2++] = q + w; }
+      if (size >= maxHoleArea && !touchesBorder) break; // ya es demasiado grande para ser un hueco: no es fondo encerrado
+    }
+    if (!touchesBorder && size >= minHoleArea && size < maxHoleArea) {
+      for (let k = 0; k < size; k++) removed[comp[k]] = 1;
+    }
   }
 
   // Quitar el fondo y suavizar el borde (píxeles claros junto al fondo, semitransparentes)

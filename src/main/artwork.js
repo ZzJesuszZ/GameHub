@@ -166,20 +166,28 @@ async function findSteamAppWikidata(title) {
   return null;
 }
 
+// Los juegos de PC usan siempre el arte de Steam/Epic (el que ya tenían y quedaba bien);
+// SteamGridDB NUNCA lo sustituye aquí, aunque haya una clave puesta — esa clave solo mejora
+// los fondos de las consolas (ver hero() más abajo). Solo si un juego añadido a mano no tiene
+// ninguna ficha en Steam se usa SteamGridDB, como última opción, para que no se quede sin nada.
 async function resolvePc(keys, games) {
   const out = {};
   await Promise.all(keys.map(async (key) => {
     const g = games.find((x) => x.path === key);
     if (!g) return (out[key] = null);
-    const grid = await sgdbImage(g.title, 'grids', 'dimensions=600x900');
-    const heroUrl = await hero(g.title);
     let appid = g.appid;
     if (!appid) appid = (await findSteamApp(g.title))?.appid;
     const local = appid && g.source === 'steam' ? steamLocal(appid) : {};
     const cdn = appid ? (f) => `${STEAM_CDN}/${appid}/${f}` : () => null;
+    const boxart = [local['library_600x900.jpg'], local['library_capsule.jpg'], cdn('library_600x900.jpg'), local['header.jpg'], cdn('header.jpg')].filter(Boolean);
+    const snap = [local['library_hero.jpg'], cdn('library_hero.jpg')].filter(Boolean);
+    if (!appid) {
+      boxart.push(await sgdbImage(g.title, 'grids', 'dimensions=600x900'));
+      snap.push(await hero(g.title));
+    }
     out[key] = {
-      boxart: [grid, local['library_600x900.jpg'], local['library_capsule.jpg'], cdn('library_600x900.jpg'), local['header.jpg'], cdn('header.jpg')].filter(Boolean),
-      snap: [heroUrl, local['library_hero.jpg'], cdn('library_hero.jpg')].filter(Boolean),
+      boxart: boxart.filter(Boolean),
+      snap: snap.filter(Boolean),
       title: [local['header.jpg'], cdn('header.jpg')].filter(Boolean),
       logo: [local['logo.png'], cdn('logo.png')].filter(Boolean),
     };
