@@ -43,7 +43,9 @@ function init(sendFn) {
     autoUpdater.updateConfigPath = cfg;
   }
   if (process.env.GAMEHUB_FAKE_VERSION) {
-    autoUpdater.currentVersion = require('semver').parse(process.env.GAMEHUB_FAKE_VERSION);
+    // Misma clase SemVer que usa electron-updater (tiene su propia copia de semver)
+    const SemVer = autoUpdater.currentVersion.constructor;
+    autoUpdater.currentVersion = new SemVer(process.env.GAMEHUB_FAKE_VERSION);
     state.current = process.env.GAMEHUB_FAKE_VERSION;
   }
 

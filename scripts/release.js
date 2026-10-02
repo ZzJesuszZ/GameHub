@@ -1,7 +1,8 @@
 // Publica una versión nueva en GitHub Releases usando la CLI `gh`.
 // Uso: sube "version" en package.json, haz commit y push, y ejecuta
 //   npm run release                 (notas generadas a partir de los commits)
-//   npm run release -- "Notas…"     (notas propias)
+//   npm run release -- notas.md     (notas propias desde un archivo Markdown; en Windows
+//                                    npm corta los textos de varias líneas pasados directamente)
 //
 // Se compila sin publicar y luego se suben juntos el instalador, su .blockmap
 // (descarga diferencial) y latest.yml (lo que lee el actualizador de la app).
@@ -38,8 +39,12 @@ for (const f of files) {
   }
 }
 
-const notes = process.argv[2];
+const notesFile = process.argv[2];
+if (notesFile && !fs.existsSync(notesFile)) {
+  console.error(`No existe el archivo de notas ${notesFile}`);
+  process.exit(1);
+}
 const args = ['release', 'create', tag, ...files, '--title', `GameHub ${version}`, '--target', run('git', ['rev-parse', 'HEAD'])];
-args.push(...(notes ? ['--notes', notes] : ['--generate-notes']));
+args.push(...(notesFile ? ['--notes-file', notesFile] : ['--generate-notes']));
 const publish = spawnSync('gh', args, { cwd: root, stdio: 'inherit' });
 process.exit(publish.status ?? 1);

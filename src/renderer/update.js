@@ -13,7 +13,7 @@ function notesHtml(notes) {
 function progressHtml(st) {
   const mb = (n) => (n / 1048576).toFixed(1);
   const detail = st.total ? `${mb(st.transferred || 0)} de ${mb(st.total)} MB` : 'Preparando…';
-  return `<p>Descargando solo las partes que han cambiado.</p>
+  return `<p>Descargando la actualización (cuando es posible, solo las partes que han cambiado).</p>
     <div class="progress modal-progress"><div style="width:${st.percent || 0}%"></div></div>
     <p class="modal-hint">${st.percent || 0}% · ${detail}</p>`;
 }

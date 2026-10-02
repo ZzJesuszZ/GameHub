@@ -20,7 +20,8 @@ Al pasar por cada consola se ve una foto suya (Wikimedia Commons, dominio públi
 ## Actualizaciones
 Al arrancar, GameHub comprueba si hay una versión nueva en GitHub y **pregunta** antes de hacer nada:
 "Actualizar ahora", "Ahora no" u "Omitir esta versión". También se puede actualizar en cualquier momento en
-**Ajustes → Actualizaciones**. La descarga es diferencial (solo las partes que cambian) y, tras instalarse,
+**Ajustes → Actualizaciones**. La descarga es diferencial (solo las partes que cambian; la primera vez tras
+instalar a mano se descarga completa) y, tras instalarse,
 GameHub se vuelve a abrir solo. Nunca se muestra el aviso en mitad de un juego.
 
 ## Dónde van las cosas
@@ -59,6 +60,7 @@ La variable `GAMEHUB_DATA` permite usar otra carpeta de datos para pruebas.
 ### Publicar una versión nueva
 1. Sube `version` en `package.json` (p. ej. `1.1.0` → `1.1.1`) y haz commit y push.
 2. `npm run release` — compila el instalador y lo publica como Release en GitHub (usa la sesión de `gh`).
+   Las notas se generan a partir de los commits; para escribirlas tú: `npm run release -- notas.md`.
 3. Las apps instaladas verán el aviso de actualización en su siguiente arranque.
 
 Para probar el actualizador sin instalar: `GAMEHUB_UPDATE_TEST=1 GAMEHUB_FAKE_VERSION=1.0.0 npm start`.
