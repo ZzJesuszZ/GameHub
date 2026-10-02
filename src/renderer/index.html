@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; img-src 'self' https: data: blob: gamehub-img:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'none'">
+  <title>GameHub</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="bg">
+    <div class="bg-layer"></div>
+    <div class="bg-layer"></div>
+    <div class="bg-shade"></div>
+    <div class="bg-grid"></div>
+    <img id="console-art" alt="">
+  </div>
+
+  <header id="topbar">
+    <div class="brand"><span class="brand-mark"></span>GameHub</div>
+    <div class="topbar-right">
+      <span id="pad-status" class="pad-status" title="Mando"></span>
+      <span id="clock"></span>
+    </div>
+  </header>
+
+  <main id="view"></main>
+
+  <footer id="hints"></footer>
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
