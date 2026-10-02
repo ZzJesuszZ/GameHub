@@ -13,6 +13,7 @@ const { Gamepad, BUTTON_NAMES } = require('./gamepad');
 const { Launcher } = require('./launcher');
 const { setAutostart, bringToFront } = require('./autostart');
 const pcgames = require('./pcgames');
+const updater = require('./updater');
 
 // gamehub-img:// sirve (solo lectura) las carátulas que Steam ya guarda en el PC
 protocol.registerSchemesAsPrivileged([
@@ -226,6 +227,15 @@ function registerIpc() {
     const target = { roms: settings.load().romsDir, bios: emulators.biosDir(), emulators: emulators.emuRoot() }[which];
     if (target) return shell.openPath(target);
   });
+  ipcMain.handle('update:state', () => updater.getState());
+  ipcMain.handle('update:check', () => updater.check());
+  ipcMain.handle('update:download', () => updater.download());
+  ipcMain.handle('update:install', () => {
+    quitting = true;
+    updater.install();
+  });
+  ipcMain.handle('update:skip', (_e, version) => settings.save({ skippedVersion: version }));
+
   ipcMain.handle('app:hide', () => win.hide());
   ipcMain.handle('app:quit', () => { quitting = true; app.quit(); });
 }
@@ -249,7 +259,30 @@ function init() {
     show(win);
     updatePollRate();
     win.webContents.send('game:exit', { game, error: err && err.message });
+    // Si llegó un aviso de actualización durante la partida, se muestra ahora
+    if (pendingUpdatePrompt) setTimeout(promptUpdate, 1500);
   });
+
+  updater.init((state) => {
+    if (!win.isDestroyed()) win.webContents.send('update:state', state);
+    if (state.status === 'available' && state.version !== settings.load().skippedVersion && !promptedVersion) {
+      promptedVersion = state.version;
+      pendingUpdatePrompt = true;
+      if (!launcher.running) promptUpdate();
+    }
+  });
+  // Se busca actualización poco después de arrancar, sin estorbar
+  setTimeout(() => updater.check(), 10_000);
+}
+
+let pendingUpdatePrompt = false;
+let promptedVersion = null;
+
+// Aviso de versión nueva: nunca en medio de un juego
+function promptUpdate() {
+  if (launcher.running || !pendingUpdatePrompt) return;
+  pendingUpdatePrompt = false;
+  win.webContents.send('update:prompt', updater.getState());
 }
 
 app.on('window-all-closed', (e) => e.preventDefault());

@@ -356,3 +356,34 @@ body[data-theme="synthwave"] #bg {
     radial-gradient(ellipse at 10% 100%, rgba(34, 211, 238, 0.35), transparent 55%),
     #0b0816;
 }
+
+/* ---------- Ventana de aviso (actualizaciones) ---------- */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 20; display: grid; place-items: center;
+  background: rgba(5, 6, 12, 0.72); backdrop-filter: blur(6px);
+  animation: enter 0.25s var(--ease);
+}
+.modal {
+  width: min(52rem, 90vw); padding: 2.4rem 2.6rem 2rem; border-radius: 20px;
+  background: var(--panel-solid); border: 1.5px solid color-mix(in srgb, var(--neon, var(--accent)) 60%, transparent);
+  box-shadow: 0 0 2.5rem color-mix(in srgb, var(--neon, var(--accent)) 30%, transparent), 0 2rem 4rem rgba(0, 0, 0, 0.6);
+}
+.modal h2 { margin: 0 0 1rem; font-size: 2rem; text-shadow: 0 0 0.8rem color-mix(in srgb, var(--neon, transparent) 60%, transparent); }
+.modal-body p { margin: 0.5rem 0; font-size: 1.25rem; line-height: 1.5; color: var(--text); }
+.modal-body .modal-hint { color: var(--muted); font-size: 1.1rem; }
+.modal-notes {
+  margin: 0.8rem 0; padding: 0.9rem 1.1rem; max-height: 12rem; overflow: hidden; border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line); font-size: 1.05rem; line-height: 1.5; color: var(--muted);
+}
+.modal-progress { width: 100%; height: 0.8rem; margin: 1rem 0 0.4rem; }
+.modal-buttons { display: flex; gap: 1rem; margin-top: 1.6rem; flex-wrap: wrap; }
+.modal-btn {
+  font: inherit; font-size: 1.2rem; font-weight: 600; color: var(--text); cursor: pointer;
+  padding: 0.8rem 1.4rem; border-radius: 12px; border: 1.5px solid var(--line); background: rgba(255, 255, 255, 0.06);
+  transition: 0.15s;
+}
+.modal-btn.focused {
+  background: color-mix(in srgb, var(--neon, var(--accent)) 22%, transparent);
+  border-color: var(--neon, var(--accent));
+  box-shadow: 0 0 1.2rem color-mix(in srgb, var(--neon, var(--accent)) 50%, transparent);
+}

@@ -1,6 +1,31 @@
 import { app, api, setBackground, escapeHtml } from '../app.js';
 import { PanelList } from './panel.js';
 import { sounds } from '../sound.js';
+import { downloadAndInstall, confirmInstall } from '../update.js';
+
+function updateStatusText(st) {
+  switch (st.status) {
+    case 'disabled': return 'Las actualizaciones funcionan en la versión instalada de GameHub';
+    case 'checking': return 'Buscando versiones nuevas…';
+    case 'none': return 'Tienes la última versión';
+    case 'available': return `Versión ${st.version} disponible`;
+    case 'downloading': return `Descargando la versión ${st.version || ''}… ${st.percent || 0}%`;
+    case 'downloaded': return `Versión ${st.version} lista para instalar`;
+    case 'error': return `No se pudo comprobar: ${st.error || 'error desconocido'}`;
+    default: return 'Descarga solo las partes que cambian; nada se instala sin tu permiso';
+  }
+}
+
+function updateActionHtml(st) {
+  switch (st.status) {
+    case 'checking': return '…';
+    case 'available': return '<b>Descargar e instalar</b>';
+    case 'downloading': return `<div class="progress"><div style="width:${st.percent || 0}%"></div></div>`;
+    case 'downloaded': return '<b>Reiniciar e instalar</b>';
+    case 'disabled': return '';
+    default: return 'Buscar';
+  }
+}
 
 export const COMBOS = [
   { buttons: ['back', 'start'], xbox: 'View + Menu', ps: 'Share + Options' },
@@ -254,6 +279,15 @@ export class SettingsView {
         a: () => this.setTheme(1),
       },
 
+      { section: 'Actualizaciones' },
+      { label: 'Versión instalada', value: () => `GameHub ${escapeHtml(app.updateState.current || '')}` },
+      {
+        label: 'Actualizar GameHub',
+        sub: () => updateStatusText(app.updateState),
+        value: () => updateActionHtml(app.updateState),
+        a: () => this.updateAction(),
+      },
+
       { section: 'Imágenes' },
       {
         label: 'Clave de SteamGridDB (opcional)',
@@ -267,6 +301,20 @@ export class SettingsView {
       { label: 'Repetir asistente inicial', a: async () => { await this.save({ setupDone: false }); location.reload(); } },
       { label: 'Salir de GameHub', cls: 'danger', sub: 'El combo del mando dejará de funcionar hasta que lo abras', a: () => api.quit() },
     ];
+  }
+
+  async updateAction() {
+    const st = app.updateState;
+    if (st.status === 'available') return downloadAndInstall();
+    if (st.status === 'downloaded') return confirmInstall();
+    if (['checking', 'downloading', 'disabled'].includes(st.status)) return;
+    app.updateState = await api.checkUpdate();
+    this.list.refresh();
+    if (app.updateState.status === 'none') app.toast('Tienes la última versión de GameHub');
+  }
+
+  onUpdateState() {
+    this.list.refresh();
   }
 
   async setTheme(dir) {

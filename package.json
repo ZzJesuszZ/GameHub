@@ -1,13 +1,14 @@
 {
   "name": "gamehub",
   "productName": "GameHub",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Lanzador de emuladores controlado con mando",
   "main": "src/main/main.js",
   "private": true,
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win nsis"
+    "dist": "electron-builder --win nsis",
+    "release": "node scripts/release.js"
   },
   "build": {
     "appId": "com.gamehub.launcher",
@@ -27,11 +28,21 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    }
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "GameHub-Setup-${version}.${ext}"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "ZzJesuszZ",
+        "repo": "GameHub",
+        "releaseType": "release"
+      }
+    ]
   },
   "dependencies": {
     "7zip-bin": "^5.2.0",
+    "electron-updater": "^6.8.9",
     "extract-zip": "^2.0.1",
     "koffi": "^3.3.2"
   },
@@ -41,5 +52,9 @@
   },
   "allowScripts": {
     "koffi@3.3.2": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ZzJesuszZ/GameHub.git"
   }
 }

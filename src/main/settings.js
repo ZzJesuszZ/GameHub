@@ -16,6 +16,8 @@ const DEFAULTS = {
   sounds: true,
   // Estilo de la interfaz: consola | synthwave | mezcla | clasico
   theme: 'consola',
+  // Versión de GameHub que el usuario eligió no instalar (no se vuelve a avisar)
+  skippedVersion: '',
 };
 
 let cache = null;

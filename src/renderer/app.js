@@ -4,6 +4,7 @@ import { SettingsView } from './views/settings.js';
 import { SetupView } from './views/setup.js';
 import { sounds } from './sound.js';
 import { cutout } from './cutout.js';
+import { promptUpdate } from './update.js';
 
 const api = window.gamehub;
 const PS_GLYPHS = { A: '✕', B: '○', X: '□', Y: '△', Menu: 'Options', View: 'Share', LB: 'L1', RB: 'R1', LT: 'L2', RT: 'R2' };
@@ -63,12 +64,63 @@ export const app = {
     this.view.mount(root);
   },
 
+  // Estado del actualizador (lo mantiene al día el proceso principal)
+  updateState: { status: 'idle' },
+  modal: null,
+
   // ---------- Entrada ----------
   input(button) {
-    if (!this.view) return;
     document.body.classList.add('hide-cursor');
     this.pointer = false;
+    // Con una ventana de aviso abierta, el mando solo la controla a ella
+    if (this.modal) return this.modal.button(button);
+    if (!this.view) return;
     this.view.button(button);
+  },
+
+  // Ventana de aviso manejable con el mando.
+  // buttons: [{ id, label }]; cancel: id que devuelve B. Devuelve { result, setHtml, close }.
+  openModal({ title, html = '', buttons = [], cancel = null }) {
+    this.modal?.close(null);
+    const el = document.createElement('div');
+    el.className = 'modal-backdrop';
+    el.innerHTML = `<div class="modal" role="dialog" aria-modal="true">
+      <h2>${escapeHtml(title)}</h2>
+      <div class="modal-body">${html}</div>
+      <div class="modal-buttons">${buttons.map((b, i) => `<button class="modal-btn" data-i="${i}">${escapeHtml(b.label)}</button>`).join('')}</div>
+    </div>`;
+    document.body.appendChild(el);
+    const btnEls = [...el.querySelectorAll('.modal-btn')];
+    let idx = 0;
+    let resolve;
+    const result = new Promise((r) => (resolve = r));
+    const focus = (i) => {
+      if (!btnEls.length) return;
+      idx = (i + btnEls.length) % btnEls.length;
+      btnEls.forEach((b, j) => b.classList.toggle('focused', j === idx));
+    };
+    const modal = {
+      result,
+      setHtml: (h) => { el.querySelector('.modal-body').innerHTML = h; },
+      close: (value) => {
+        if (this.modal === modal) this.modal = null;
+        el.remove();
+        resolve(value);
+      },
+      button: (b) => {
+        if (b === 'left' || b === 'up') { sounds.move(); focus(idx - 1); }
+        else if (b === 'right' || b === 'down') { sounds.move(); focus(idx + 1); }
+        else if (b === 'a' && btnEls.length) { sounds.select(); modal.close(buttons[idx].id); }
+        else if (b === 'b' && cancel !== null) { sounds.back(); modal.close(cancel); }
+      },
+    };
+    btnEls.forEach((b, i) => {
+      b.addEventListener('mouseenter', () => focus(i));
+      b.addEventListener('click', () => modal.close(buttons[i].id));
+    });
+    focus(0);
+    this.modal = modal;
+    return modal;
   },
 
   setPadNames(names = []) {
@@ -252,6 +304,11 @@ api.onPadConnection((on, names = []) => {
   app.toast(on ? `Mando conectado${names[0] ? `: ${names[0]}` : ''}` : 'Mando desconectado');
 });
 api.onActive((active) => (app.active = active));
+api.onUpdateState((st) => {
+  app.updateState = st;
+  app.view?.onUpdateState?.(st);
+});
+api.onUpdatePrompt((st) => promptUpdate(st));
 api.onGameExit(async ({ error }) => {
   if (error) app.toast(`No se pudo abrir el juego: ${error}`, { error: true, ms: 6000 });
   await app.refresh();
@@ -268,6 +325,7 @@ tick();
 // ---------- Arranque ----------
 (async () => {
   const state = await app.refresh();
+  app.updateState = await api.getUpdateState();
   $('#pad-status').classList.toggle('on', state.padConnected);
   app.setPadNames(state.padNames);
   if (!state.settings.setupDone) app.mount(SetupView, {});
