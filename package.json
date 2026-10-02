@@ -1,7 +1,7 @@
 {
   "name": "gamehub",
   "productName": "GameHub",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Lanzador de emuladores controlado con mando",
   "main": "src/main/main.js",
   "private": true,
