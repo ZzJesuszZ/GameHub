@@ -113,6 +113,9 @@ export class SettingsView {
       if (e.target.id === 'sgdb-key') this.save({ steamGridDbKey: e.target.value.trim() });
       if (e.target.dataset.pcId) this.renamePc(e.target.dataset.pcId, e.target.value);
     });
+    root.querySelector('#list').addEventListener('click', (e) => {
+      if (e.target.id === 'sgdb-paste') this.pasteSgdbKey();
+    });
     this.loadManual();
   }
 
@@ -157,6 +160,14 @@ export class SettingsView {
       app.hints([['A', 'Renombrar'], ['Y', 'Quitar'], ['B', 'Atrás']]);
       return;
     }
+    if (it?.openExternal) {
+      app.hints([['A', 'Abrir web'], ['B', 'Atrás']]);
+      return;
+    }
+    if (it?.sgdbKey) {
+      app.hints([['A', 'Escribir'], ['X', 'Pegar'], ['B', 'Atrás']]);
+      return;
+    }
     if (it?.emuId) {
       const st = app.state.emulators.find((e) => e.id === it.emuId);
       app.hints([
@@ -185,6 +196,19 @@ export class SettingsView {
     app.state.emulators = await api.clearEmulatorExe(id);
     await app.refresh();
     this.updateHints(this.list.items[this.list.idx]);
+  }
+
+  async pasteSgdbKey() {
+    const text = (await api.pasteClipboard()).trim();
+    if (!text) {
+      sounds.error();
+      app.toast('El portapapeles está vacío. Copia la clave desde la web y vuelve a intentarlo', { error: true });
+      return;
+    }
+    await this.save({ steamGridDbKey: text });
+    const input = document.getElementById('sgdb-key');
+    if (input) input.value = text;
+    app.toast('Clave de SteamGridDB pegada y guardada');
   }
 
   async save(patch) {
@@ -290,10 +314,18 @@ export class SettingsView {
 
       { section: 'Imágenes' },
       {
-        label: 'Clave de SteamGridDB (opcional)',
-        sub: 'Fondos en alta calidad. Gratis en steamgriddb.com → Preferencias → API',
-        value: () => `<input type="text" id="sgdb-key" placeholder="Sin clave: se usan capturas de libretro" value="${escapeHtml(s().steamGridDbKey)}">`,
+        label: 'Obtener clave de SteamGridDB', openExternal: true,
+        sub: 'Abre la web para crear una cuenta gratis (puedes entrar con tu Steam) y generar tu clave',
+        value: () => 'Abrir web ↗',
+        a: () => api.openExternal('steamgriddb'),
+      },
+      {
+        label: 'Clave de SteamGridDB (opcional)', sgdbKey: true,
+        sub: s().steamGridDbKey ? 'Activada: fondos en alta calidad' : 'Sin clave: se usan capturas de libretro. Pégala aquí tras generarla',
+        value: () => `<input type="text" id="sgdb-key" placeholder="Pega aquí tu clave" value="${escapeHtml(s().steamGridDbKey)}">
+          <button type="button" class="inline-btn" id="sgdb-paste">Pegar</button>`,
         a: () => document.getElementById('sgdb-key')?.focus(),
+        x: () => this.pasteSgdbKey(),
       },
 
       { section: 'GameHub' },

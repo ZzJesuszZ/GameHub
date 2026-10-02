@@ -1,6 +1,6 @@
 const path = require('path');
 const { pathToFileURL } = require('url');
-const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, shell, session, nativeImage, protocol, net } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, shell, session, nativeImage, protocol, net, clipboard } = require('electron');
 
 // Permite usar otra carpeta de datos (útil para pruebas)
 if (process.env.GAMEHUB_DATA) app.setPath('userData', process.env.GAMEHUB_DATA);
@@ -227,6 +227,13 @@ function registerIpc() {
     const target = { roms: settings.load().romsDir, bios: emulators.biosDir(), emulators: emulators.emuRoot() }[which];
     if (target) return shell.openPath(target);
   });
+  // Lista fija de páginas externas: nunca se abre una URL que venga del renderer
+  ipcMain.handle('shell:openExternal', (_e, which) => {
+    const url = { steamgriddb: 'https://www.steamgriddb.com/profile/preferences/api' }[which];
+    if (url) return shell.openExternal(url);
+  });
+  // Pegar la clave de SteamGridDB (u otro texto corto) desde el portapapeles del sistema
+  ipcMain.handle('clipboard:paste', () => clipboard.readText());
   ipcMain.handle('update:state', () => updater.getState());
   ipcMain.handle('update:check', () => updater.check());
   ipcMain.handle('update:download', () => updater.download());

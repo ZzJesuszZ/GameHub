@@ -25,6 +25,8 @@ contextBridge.exposeInMainWorld('gamehub', {
   clearEmulatorExe: (id) => ipcRenderer.invoke('emulators:clearExe', id),
   pickFolder: (current) => ipcRenderer.invoke('dialog:folder', current),
   openFolder: (which) => ipcRenderer.invoke('shell:open', which),
+  openExternal: (which) => ipcRenderer.invoke('shell:openExternal', which),
+  pasteClipboard: () => ipcRenderer.invoke('clipboard:paste'),
   getUpdateState: () => ipcRenderer.invoke('update:state'),
   checkUpdate: () => ipcRenderer.invoke('update:check'),
   downloadUpdate: () => ipcRenderer.invoke('update:download'),
