@@ -19,6 +19,11 @@ GameHub no distribuye ni enlaza a ROMs de juegos comerciales. Cuando una consola
 ("Juegos gratis") abre en itch.io —una web segura— los juegos homebrew y freeware gratuitos y legales de esa consola.
 Para el resto, usa copias de seguridad de tus propios juegos.
 
+## Ajustes de los emuladores
+En Ajustes → Emuladores, cada uno tiene una fila **"Abrir \<Emulador\>"** que lo arranca sin ningún juego, en su
+propia ventana, para cambiar su configuración (mando, vídeo, BIOS, tarjetas de memoria…). GameHub se oculta
+mientras está abierto y vuelve solo al cerrarlo.
+
 ## Apariencia
 Ajustes → Apariencia → Estilo: neón con el color de cada consola, neón cian + magenta, mezcla o clásico.
 Al pasar por cada consola se ve una foto suya (Wikimedia Commons, dominio público), recortada en memoria.

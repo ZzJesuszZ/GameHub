@@ -163,6 +163,7 @@ function registerIpc() {
     await launcher.launch(game, pad.names);
     library.update(romPath, { lastPlayed: Date.now(), playCount: game.playCount + 1 });
   });
+  ipcMain.handle('emulator:open', (_e, emulatorId) => launcher.launchEmulator(emulatorId));
 
   ipcMain.handle('settings:save', (_e, patch) => {
     const s = settings.save(patch);

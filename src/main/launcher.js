@@ -45,6 +45,18 @@ class Launcher extends EventEmitter {
     this.emit('start', game);
   }
 
+  // Abre un emulador solo (sin juego) para tocar sus ajustes: mando, vídeo, BIOS…
+  launchEmulator(emulatorId) {
+    if (this.running) throw new Error('Ya hay un juego en marcha');
+    const [exe, args] = emulators.launchStandalone(emulatorId);
+    const proc = spawn(exe, args, { cwd: path.dirname(exe), detached: false, stdio: 'ignore' });
+    this.proc = proc;
+    this.game = { console: null, path: null, title: `${emulators.EMULATORS[emulatorId].name} (ajustes)` };
+    proc.on('error', (err) => this.finish(err));
+    proc.on('exit', () => this.finish());
+    this.emit('start', this.game);
+  }
+
   async launchPc(game) {
     await pcgames.launch(game);
     this.game = game;

@@ -452,4 +452,12 @@ function launchCommand(consoleDef, romPath) {
   }
 }
 
-module.exports = { EMULATORS, status, install, isReady, launchCommand, prepareLaunch, biosDir, emuRoot, autoDetect, setCustomPath };
+// Abre el emulador solo, con su propia ventana/menú y sin ningún juego — para tocar sus
+// ajustes (mando, vídeo, BIOS, tarjetas de memoria…) sin forzar pantalla completa.
+function launchStandalone(emulatorId) {
+  if (!EMULATORS[emulatorId]) throw new Error(`Emulador desconocido: ${emulatorId}`);
+  if (!fs.existsSync(exePath(emulatorId))) throw new Error(`${EMULATORS[emulatorId].name} no está instalado`);
+  return [exePath(emulatorId), []];
+}
+
+module.exports = { EMULATORS, status, install, isReady, launchCommand, launchStandalone, prepareLaunch, biosDir, emuRoot, autoDetect, setCustomPath };

@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld('gamehub', {
   renamePcGame: (id, title) => ipcRenderer.invoke('pc:rename', id, title),
   removePcGame: (id) => ipcRenderer.invoke('pc:remove', id),
   launch: (romPath) => ipcRenderer.invoke('game:launch', romPath),
+  openEmulator: (emulatorId) => ipcRenderer.invoke('emulator:open', emulatorId),
   saveSettings: (patch) => ipcRenderer.invoke('settings:save', patch),
   installEmulators: (ids) => ipcRenderer.invoke('emulators:install', ids),
   pickEmulatorExe: (id) => ipcRenderer.invoke('emulators:pickExe', id),
