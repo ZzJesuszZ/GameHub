@@ -159,6 +159,20 @@ export class GamesView {
     }
   }
 
+  // Abre el emulador de esta consola sin ningún juego, para tocar sus ajustes (mando, vídeo, BIOS…)
+  async openEmulator() {
+    const emu = app.state.emulators.find((e) => e.id === this.c.emulator);
+    if (!emu) return;
+    try {
+      await api.openEmulator(emu.id);
+      sounds.launch();
+      app.toast(`Abriendo ${emu.name}… vuelve a GameHub al cerrarlo`);
+    } catch (e) {
+      sounds.error();
+      app.toast(e.message.replace(/^.*Error: /, ''), { error: true });
+    }
+  }
+
   async toggleFavorite() {
     const g = this.games[this.idx];
     if (!g) return;
@@ -189,6 +203,7 @@ export class GamesView {
       ...(showHomebrew ? [['Y', 'Juegos gratis']] : []),
       ['X', hasGames ? (this.onlyFavs ? 'Ver todos' : 'Solo favoritos') : 'Buscar juegos'],
       ['LB', ''], ['RB', 'Cambiar consola'],
+      ...(this.c.pc ? [] : [['View', 'Abrir emulador']]),
       ['B', 'Atrás'],
     ]);
   }
@@ -230,6 +245,7 @@ export class GamesView {
       case 'lb': return this.switchConsole(-1);
       case 'rb': return this.switchConsole(1);
       case 'b': return app.back();
+      case 'back': return this.c.pc ? undefined : this.openEmulator();
       case 'start': sounds.select(); return app.go(SettingsView);
     }
   }

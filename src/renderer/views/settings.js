@@ -168,10 +168,6 @@ export class SettingsView {
       app.hints([['A', 'Escribir'], ['X', 'Pegar'], ['B', 'Atrás']]);
       return;
     }
-    if (it?.openEmu) {
-      app.hints([['A', 'Abrir'], ['B', 'Atrás']]);
-      return;
-    }
     if (it?.emuId) {
       const st = app.state.emulators.find((e) => e.id === it.emuId);
       app.hints([
@@ -200,16 +196,6 @@ export class SettingsView {
     app.state.emulators = await api.clearEmulatorExe(id);
     await app.refresh();
     this.updateHints(this.list.items[this.list.idx]);
-  }
-
-  async openEmulatorStandalone(emuId, label) {
-    try {
-      await api.openEmulator(emuId);
-      app.toast(`Abriendo ${label}… vuelve a GameHub al cerrarlo`);
-    } catch (e) {
-      sounds.error();
-      app.toast(e.message.replace(/^.*Error: /, ''), { error: true });
-    }
   }
 
   async pasteSgdbKey() {
@@ -250,27 +236,18 @@ export class SettingsView {
       { label: 'Abrir carpeta de BIOS', sub: 'PS1 → bios\\psx · PS2 → bios\\ps2 (necesarias para esas consolas)', a: () => api.openFolder('bios') },
 
       { section: 'Emuladores' },
-      ...emulatorItems(this.progress).flatMap((it) => [
-        {
-          ...it,
-          x: () => this.pickExe(it.emuId),
-          y: () => this.clearExe(it.emuId),
-          a: async () => {
-            if (this.installing) return;
-            this.installing = true;
-            const errors = await installEmulators([it.emuId], this.progress, this.list);
-            this.installing = false;
-            app.toast(errors[it.emuId] ? `Error instalando ${it.label}` : `${it.label} listo`, { error: !!errors[it.emuId] });
-          },
+      ...emulatorItems(this.progress).map((it) => ({
+        ...it,
+        x: () => this.pickExe(it.emuId),
+        y: () => this.clearExe(it.emuId),
+        a: async () => {
+          if (this.installing) return;
+          this.installing = true;
+          const errors = await installEmulators([it.emuId], this.progress, this.list);
+          this.installing = false;
+          app.toast(errors[it.emuId] ? `Error instalando ${it.label}` : `${it.label} listo`, { error: !!errors[it.emuId] });
         },
-        {
-          openEmu: it.emuId,
-          label: `Abrir ${it.label}`,
-          sub: 'Sin ningún juego, para cambiar sus ajustes (mando, vídeo, BIOS…)',
-          value: () => '▶',
-          a: () => this.openEmulatorStandalone(it.emuId, it.label),
-        },
-      ]),
+      })),
       { label: 'Abrir carpeta de emuladores', a: () => api.openFolder('emulators') },
 
       { section: 'Mando e inicio' },

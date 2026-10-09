@@ -446,7 +446,7 @@ function launchCommand(consoleDef, romPath) {
   switch (consoleDef.emulator) {
     case 'retroarch': return [exe, ['-f', '-L', corePath(consoleDef.core), romPath]];
     case 'dolphin':   return [exe, ['-b', '-e', romPath]];
-    case 'pcsx2':     return [exe, ['-batch', '-nogui', '-fullscreen', '--', romPath]];
+    case 'pcsx2':     return [exe, ['-batch', '-fullscreen', '--', romPath]];
     case 'ppsspp':    return [exe, ['--fullscreen', romPath]];
     default: throw new Error(`Emulador desconocido: ${consoleDef.emulator}`);
   }

@@ -270,7 +270,7 @@ export function escapeHtml(s) {
 const KEYMAP = {
   ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
   Enter: 'a', ' ': 'a', Escape: 'b', Backspace: 'b',
-  f: 'y', F: 'y', x: 'x', X: 'x', q: 'lb', Q: 'lb', e: 'rb', E: 'rb', Tab: 'start',
+  f: 'y', F: 'y', x: 'x', X: 'x', q: 'lb', Q: 'lb', e: 'rb', E: 'rb', Tab: 'start', o: 'back', O: 'back',
 };
 window.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT') {

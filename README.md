@@ -20,7 +20,7 @@ GameHub no distribuye ni enlaza a ROMs de juegos comerciales. Cuando una consola
 Para el resto, usa copias de seguridad de tus propios juegos.
 
 ## Ajustes de los emuladores
-En Ajustes → Emuladores, cada uno tiene una fila **"Abrir \<Emulador\>"** que lo arranca sin ningún juego, en su
+Dentro de cada consola, el botón **View** (Share en PlayStation, tecla **O**) abre su emulador sin ningún juego, en su
 propia ventana, para cambiar su configuración (mando, vídeo, BIOS, tarjetas de memoria…). GameHub se oculta
 mientras está abierto y vuelve solo al cerrarlo.
 
@@ -52,6 +52,7 @@ Funciona con mandos de Xbox, PlayStation (incluidos clones genéricos), Switch P
 | X | □ | Solo favoritos |
 | LB / RB | L1 / R1 | Consola anterior / siguiente |
 | Menu | Options | Ajustes |
+| View | Share | Abrir el emulador de la consola (dentro de una consola) |
 | **View + Menu 1 s** | **Share + Options 1 s** | Abrir GameHub desde cualquier sitio |
 | **ídem 2 s** (jugando) | **ídem 2 s** (jugando) | Cerrar el juego y volver |
 
